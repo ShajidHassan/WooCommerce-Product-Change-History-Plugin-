@@ -91,7 +91,7 @@ class Price_Change_History_List_Table extends WP_List_Table
         if ($search_query) {
             $product_ids = $wpdb->get_col(
                 $wpdb->prepare(
-                    "SELECT ID FROM {$wpdb->posts} WHERE post_type = 'product' AND post_title LIKE %s",
+                    "SELECT ID FROM {$wpdb->posts} WHERE post_type = 'product' AND post_title LIKE %s AND post_status != 'trash'",
                     '%' . $wpdb->esc_like($search_query) . '%'
                 )
             );
@@ -219,19 +219,26 @@ class Price_Change_History_List_Table extends WP_List_Table
 
             case 'new_price':
                 $product = wc_get_product($item->product_id);
-                // If product current price is greater add green increment icon  or is smaller add red decrement icon. Also show the increment or decrement amount with + or - minus symbol
-                if ($product && $item->new_price > $item->price) {
-                    return wc_price($item->new_price) . ' <span class="dashicons dashicons-arrow-up-alt" style="color:green;"></span>' . wc_price($item->price_difference);
-                } elseif ($product && $item->new_price < $item->price) {
-                    return wc_price($item->new_price) . ' <span class="dashicons dashicons-arrow-down-alt" style="color:red
-                    ;"></span>' . wc_price($item->price_difference);
+                if ($product && get_post_status($item->product_id) !== 'trash') {
+                    // If product current price is greater, add green increment icon, else add red decrement icon
+                    if ($item->new_price > $item->price) {
+                        return wc_price($item->new_price) . ' <span class="dashicons dashicons-arrow-up-alt" style="color:green;"></span>' . wc_price($item->price_difference);
+                    } elseif ($item->new_price < $item->price) {
+                        return wc_price($item->new_price) . ' <span class="dashicons dashicons-arrow-down-alt" style="color:red;"></span>' . wc_price($item->price_difference);
+                    }
+                } else {
+                    return '';
                 }
+                break;
                 // return wc_price( $product ? $product->get_price() : 0 );
 
             case 'current_price':
                 $product = wc_get_product($item->product_id);
-                return wc_price($product->get_price());
-
+                if ($product && get_post_status($item->product_id) !== 'trash') {
+                    return wc_price($product->get_price());
+                } else {
+                    return '';
+                }
             case 'changed_by':
                 $user = get_user_by('id', $item->changed_by);
                 $username = $user ? $user->display_name : __('Unknown', 'price-change-history');
