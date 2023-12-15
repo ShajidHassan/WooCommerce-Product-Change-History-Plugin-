@@ -118,9 +118,9 @@ class Stock_Change_History_List_Table extends WP_List_Table
             'product_name' => __('Product Name', 'stock-change-history'),
             'old_stock_status' => __('Old Stock Status', 'stock-change-history'),
             'new_stock_status' => __('New Stock Status', 'stock-change-history'),
+            'current_stock_status' => __('Current Stock Status', 'stock-change-history'),
             'changed_by' => __('Changed By', 'stock-change-history'),
             'change_date' => __('Change Date', 'stock-change-history'),
-            'current_stock_status' => __('Current Stock Status', 'stock-change-history'),
         );
 
         // Define hidden columns (optional)
@@ -132,6 +132,7 @@ class Stock_Change_History_List_Table extends WP_List_Table
             'product_id' => array('product_id', false),
             'old_stock_status' => array('old_stock_status', false),
             'new_stock_status' => array('new_stock_status', false),
+            'current_stock_status' => array('current_stock_status', true),
             'change_date' => array('change_date', true),
         );
 
@@ -179,7 +180,14 @@ class Stock_Change_History_List_Table extends WP_List_Table
             }
         }
 
-        $total_items = $wpdb->get_var("SELECT COUNT(*) FROM $table_name" . $where_clause);
+        $total_items = $wpdb->get_var(
+            $wpdb->prepare(
+                "SELECT COUNT(*) 
+            FROM $table_name
+            $where_clause 
+            AND product_id IN (SELECT ID FROM {$wpdb->posts} WHERE post_type = 'product' AND post_status != 'trash')"
+            )
+        );
 
         $this->set_pagination_args(
             array(
@@ -199,6 +207,11 @@ class Stock_Change_History_List_Table extends WP_List_Table
                 ($current_page - 1) * $per_page
             )
         );
+        // Filter out deleted (trashed) products
+        $this->items = array_filter($this->items, function ($item) {
+            $post = get_post($item->product_id);
+            return $post && $post->post_status !== 'trash';
+        });
     }
 
     // Define columns for the table

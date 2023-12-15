@@ -3,7 +3,7 @@
 /**
  * Plugin Name: WooCommerce Price, Stock, Title and Weight Change History
  * Description: Track and log price, stock, title, and weight changes seamlessly within WooCommerce with our all-in-one plugin, ensuring a clear history of product modifications.
- * Version: 1.0.0
+ * Version: 2.0.0
  * Author: Rashed Mazumder
  * Author URI: https://mirailit.com/
  * Text Domain: price-stock-title-weight-change-history
@@ -213,7 +213,7 @@ function price_change_history_get_history($product_id)
     $table_name = $wpdb->prefix . 'price_change_history';
     $history = $wpdb->get_results(
         $wpdb->prepare(
-            "SELECT price, change_date, changed_by FROM $table_name WHERE product_id = %d ORDER BY change_date DESC",
+            "SELECT price, change_date, changed_by, new_price, price_difference FROM $table_name WHERE product_id = %d ORDER BY change_date DESC",
             $product_id
         )
     );
@@ -251,7 +251,7 @@ function price_change_history_meta_box_callback($post)
         echo '<p><strong>' . __('Current Price:', 'price-change-history') . '</strong> ' . wc_price($current_price) . ' (' . date('F j, Y') . ')</p>';
 
         echo '<table class="wp-list-table widefat fixed striped">';
-        echo '<thead><tr><th>' . __('Old Price', 'price-change-history') . '</th><th>' . __('Changed Date', 'price-change-history') . '</th><th>' . __('Changed By', 'price-change-history') . '</th></tr></thead>';
+        echo '<thead><tr><th>' . __('Old Price', 'price-change-history') . '</th><th>' . __('Changed Price', 'price-change-history') . '</th><th>' . __('Changed Date', 'price-change-history') . '</th><th>' . __('Changed By', 'price-change-history') . '</th></tr></thead>';
         echo '<tbody>';
         foreach ($history as $change) {
 
@@ -260,6 +260,13 @@ function price_change_history_meta_box_callback($post)
 
             echo '<tr>';
             echo '<td>' . wc_price($change->price) . '</td>';
+            echo '<td>';
+            if ($change->new_price > $change->price) {
+                echo wc_price($change->new_price) . ' <span class="dashicons dashicons-arrow-up-alt" style="color:green;"></span>' . wc_price($change->price_difference);
+            } elseif ($change->new_price < $change->price) {
+                echo wc_price($change->new_price) . ' <span class="dashicons dashicons-arrow-down-alt" style="color:red;"></span>' . wc_price($change->price_difference);
+            }
+            echo '</td>';
             echo '<td>' . date('F j, Y H:i A', strtotime($change->change_date)) . '</td>';
             echo '<td>' . $username . '</td>';
 
@@ -404,7 +411,7 @@ function stock_change_history_meta_box_callback($post)
         echo '<p><strong>' . __('Current Stock Status:', 'stock-change-history') . '</strong> ' . $readable_stock_status . '</p>';
 
         echo '<table class="wp-list-table widefat fixed striped">';
-        echo '<thead><tr><th>' . __('Old Status', 'stock-change-history') . '</th><th>' . __('Changed Date', 'stock-change-history') . '</th><th>' . __('Changed By', 'stock-change-history') . '</th></tr></thead>';
+        echo '<thead><tr><th>' . __('Old Status', 'stock-change-history') . '</th><th>' . __('Changed To', 'stock-change-history') . '</th><th>' . __('Changed Date', 'stock-change-history') . '</th><th>' . __('Changed By', 'stock-change-history') . '</th></tr></thead>';
         echo '<tbody>';
         foreach ($history as $change) {
 
@@ -413,6 +420,7 @@ function stock_change_history_meta_box_callback($post)
 
             echo '<tr>';
             echo '<td>' . get_readable_stock_status($change->old_stock_status) . '</td>';
+            echo '<td>' . get_readable_stock_status($change->new_stock_status) . '</td>';
             echo '<td>' . date('F j, Y H:i A', strtotime($change->change_date)) . '</td>';
             echo '<td>' . $username . '</td>';
             echo '</tr>';
