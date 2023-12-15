@@ -119,10 +119,15 @@ class Price_Change_History_List_Table extends WP_List_Table
         // Fetch all items (without pagination limits)
         $this->items = $wpdb->get_results(
             "SELECT product_id, price, change_date, changed_by, new_price, price_difference
-    FROM $table_name
-    $where_clause_without_limit
-    ORDER BY change_date DESC"
+            FROM $table_name
+            $where_clause_without_limit
+            ORDER BY change_date DESC"
         );
+        // Filter out deleted (trashed) products
+        $this->items = array_filter($this->items, function ($item) {
+            $post = get_post($item->product_id);
+            return $post && $post->post_status !== 'trash';
+        });
 
         // Apply price difference filtering based on the already fetched items
         $selected_price_difference = isset($_GET['price_difference']) ? $_GET['price_difference'] : 'all';
