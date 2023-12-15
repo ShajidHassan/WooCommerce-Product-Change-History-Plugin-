@@ -261,10 +261,14 @@ function price_change_history_meta_box_callback($post)
             echo '<tr>';
             echo '<td>' . wc_price($change->price) . '</td>';
             echo '<td>';
-            if ($change->new_price > $change->price) {
-                echo wc_price($change->new_price) . ' <span class="dashicons dashicons-arrow-up-alt" style="color:green;"></span>' . wc_price($change->price_difference);
-            } elseif ($change->new_price < $change->price) {
-                echo wc_price($change->new_price) . ' <span class="dashicons dashicons-arrow-down-alt" style="color:red;"></span>' . wc_price($change->price_difference);
+            if ($change->new_price != 0.0) {
+                if ($change->new_price > $change->price) {
+                    echo wc_price($change->new_price) . ' <span class="dashicons dashicons-arrow-up-alt" style="color:green;"></span>' . wc_price($change->price_difference);
+                } elseif ($change->new_price < $change->price) {
+                    echo wc_price($change->new_price) . ' <span class="dashicons dashicons-arrow-down-alt" style="color:red;"></span>' . wc_price($change->price_difference);
+                }
+            } else {
+                echo 'N/A';
             }
             echo '</td>';
             echo '<td>' . date('F j, Y H:i A', strtotime($change->change_date)) . '</td>';

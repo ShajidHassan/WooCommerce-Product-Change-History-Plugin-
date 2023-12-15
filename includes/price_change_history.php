@@ -225,11 +225,15 @@ class Price_Change_History_List_Table extends WP_List_Table
             case 'new_price':
                 $product = wc_get_product($item->product_id);
                 if ($product && get_post_status($item->product_id) !== 'trash') {
-                    // If product current price is greater, add green increment icon, else add red decrement icon
-                    if ($item->new_price > $item->price) {
-                        return wc_price($item->new_price) . ' <span class="dashicons dashicons-arrow-up-alt" style="color:green;"></span>' . wc_price($item->price_difference);
-                    } elseif ($item->new_price < $item->price) {
-                        return wc_price($item->new_price) . ' <span class="dashicons dashicons-arrow-down-alt" style="color:red;"></span>' . wc_price($item->price_difference);
+                    if ($item->new_price != 0.0) {
+                        // If product current price is greater, add green increment icon, else add red decrement icon
+                        if ($item->new_price > $item->price) {
+                            return wc_price($item->new_price) . ' <span class="dashicons dashicons-arrow-up-alt" style="color:green;"></span>' . wc_price($item->price_difference);
+                        } elseif ($item->new_price < $item->price) {
+                            return wc_price($item->new_price) . ' <span class="dashicons dashicons-arrow-down-alt" style="color:red;"></span>' . wc_price($item->price_difference);
+                        }
+                    } else {
+                        return 'N/A';
                     }
                 } else {
                     return '';
