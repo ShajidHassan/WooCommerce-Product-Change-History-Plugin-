@@ -20,6 +20,7 @@ require_once plugin_dir_path(__FILE__) . 'includes/price_change_history.php';
 require_once plugin_dir_path(__FILE__) . 'includes/stock_change_history.php';
 require_once plugin_dir_path(__FILE__) . 'includes/title_change_history.php';
 require_once plugin_dir_path(__FILE__) . 'includes/weight_change_history.php';
+require_once plugin_dir_path(__FILE__) . 'includes/stock_out_list.php';
 require_once plugin_dir_path(__FILE__) . 'includes/database.php';
 
 
